@@ -1,0 +1,3 @@
+<apex:page standardController="Apttus__APTS_Agreement__c" extensions="NegotiationCompleteController" action="{!finalize}">
+
+</apex:page>

@@ -1,0 +1,16 @@
+<apex:page controller="CLDY_SubmitRequestController" action="{!onPageLoad}" tabStyle="Apttus__APTS_Agreement__c">
+    <apex:form >
+        <apex:pageBlock rendered="{!!agreementSubmitResponse}">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Back To Agreement" action="{!backToAgreement}"></apex:commandButton>
+            </apex:pageBlockButtons> 
+            <apex:pageMessages ></apex:pageMessages>
+        </apex:pageBlock>
+        <apex:outputPanel rendered="{!agreementSubmitResponse}">
+            <script>
+                var alertResponse = alert('Agreement Submitted to ' + '{!ownerName}');
+                window.location.href = '/' + '{!agreementId}'; 
+            </script>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page controller="returnToRequestorController" action="{!returnToRequestor}">
+    <apex:form >
+        <apex:pageBlock title="Insufficient Privileges" rendered="{!hasErrors}">
+            <apex:pageblockSection columns="1" >
+                You do not have the level of access necessary to perform the operation you requested. Please contact admin.
+            </apex:pageblockSection>
+            <apex:pageblockButtons location="bottom"  >
+                <apex:commandButton value="Return" action="{!gotoAgreement}"/>
+            </apex:pageblockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

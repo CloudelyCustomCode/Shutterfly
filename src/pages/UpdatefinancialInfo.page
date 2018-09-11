@@ -1,0 +1,38 @@
+<apex:page standardController="Apttus__APTS_Agreement__c" extensions="FiniancialInfoController" sidebar="false" docType="html-5.0">
+    <apex:sectionHeader title="Financial Information"/>
+        <apex:form >
+            <apex:pageBlock >
+                <apex:pagemessages ></apex:pagemessages>
+                <apex:pageblocksection >
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Payment Terms"/>
+                        <apex:inputField value="{!Proposal.Payment_Terms__c}"/> 
+                    </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Finance Type"/>
+                        <apex:inputField value="{!Proposal.Finance_Type__c}"/> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="EFI Quote #"/>
+                        <apex:inputField value="{!Proposal.EFI_Quote__c}"/> 
+                    </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Non-Standard Accounting"/>
+                        <apex:inputField value="{!Proposal.Non_Standard_Accounting__c}"/> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Change Request Hourly Rate"/>
+                        <apex:inputField value="{!Proposal.Change_Request_Hourly_Rate__c}"/> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Accounting Comments"/>
+                        <apex:inputField value="{!Proposal.Accounting_Comments__c}"/> 
+                </apex:pageBlockSectionItem>
+                </apex:pageblocksection> 
+                <div align="center" draggable="false" >
+                    <apex:commandbutton value="Save" action="{!saveFinancialInfo}"/>
+                    <apex:commandButton value="Cancel" action="{!gotoAgreement}" /> 
+            </div>
+        </apex:pageBlock> 
+    </apex:form> 
+</apex:page>

@@ -1,0 +1,3 @@
+<apex:page controller="SubmitRequest_AC" action="{!AggRedirect}">
+
+</apex:page>

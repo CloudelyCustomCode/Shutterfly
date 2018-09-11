@@ -1,0 +1,59 @@
+<apex:page standardController="Apttus__APTS_Agreement__c" extensions="assignToLegal">
+    <style>
+        .r2r-label {
+            position: relative;  
+            width: 18vw;
+            top:5px;
+            display: inline-block;
+            text-align: right;
+            right: 37px;
+            font-weight: bold;
+            color: #4a4a56;
+            font-size: 91%;
+        }
+
+        .r2r-reason {
+            right: 55px !important;
+        }
+
+        .r2r-button {
+            position: relative;
+            left: -25px;
+            width: 32vw;
+            display: inline-block;
+        }
+        .r2-reason-label, .legalR2R, .procurementR2R, .financeR2R  {
+            position: relative;
+            left: -15px;
+        }
+
+    </style>
+    <apex:form id="formPanel" >
+        <apex:pageBlock mode="maindetail">
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:pageBlockSection columns="2" collapsible="false" >
+                <!--  Legal Return -->
+                <apex:panelGrid columns="2">
+                    <label class="r2r-label r2r-reason">Select Attorney</label>
+                    <apex:outputPanel styleClass="r2r-button">
+                        <apex:inputField value="{!agreement.Cldy_Attorney__c}"  styleClass="legalR2R" rendered="{!!disableAttorney}"/>
+                        <apex:outputField value="{!agreement.Cldy_Attorney__c}"  styleClass="legalR2R" rendered="{!disableAttorney}"/>  
+                    </apex:outputPanel>
+                </apex:panelGrid>
+                <apex:panelGrid columns="2">
+                    <label class="r2r-label">Assign To Attorney</label>
+                    <apex:outputPanel styleClass="r2r-button">
+                        <apex:commandButton value="Assign To Attorney" action="{!AssignToAttorney}" disabled="{!disableAttorney}" rerender="formPanel"/>  
+                    </apex:outputPanel>
+                </apex:panelGrid>
+                
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:outputPanel rendered="{!shouldRedirect}">
+            <script type="text/javascript">
+                //alert('{!parentURL}');
+                top.location.href= '{!parentURL}';    
+            </script>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

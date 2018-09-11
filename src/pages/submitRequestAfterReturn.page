@@ -1,0 +1,12 @@
+<apex:page action="{!submitRequest}" standardController="Apttus__APTS_Agreement__c" extensions="ResubmitAgreementController" >
+    <apex:form >
+        <apex:pageBlock title="Insufficient Privileges" rendered="{!NOT(isPermission)}">
+            <apex:pageblockSection columns="1" >
+                You do not have the level of access necessary to perform the operation you requested. Please contact the owner of the record or your administrator if access is necessary. ({0})
+            </apex:pageblockSection>
+            <apex:pageblockButtons location="bottom"  >
+                <apex:commandButton value="Return" action="{!gotoAgreement}"/>
+            </apex:pageblockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

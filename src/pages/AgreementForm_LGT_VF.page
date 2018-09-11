@@ -1,0 +1,878 @@
+<apex:page controller="AgreementForm_ctrlr" showHeader="true" sidebar="true" docType="html-5.0" standardStylesheets="false" cache="false">
+    <!--<apex:form id="myForm">-->
+        <style>
+            .slds-lookup {
+                background-color: white;
+                color: #16325c;
+                border: 1px solid #d8dde6;
+                border-radius: 0.25rem;
+                width: 100%;
+                -webkit-transition: border 0.1s linear, background-color 0.1s linear;
+                transition: border 0.1s linear, background-color 0.1s linear;
+                display: inline-block;
+                padding: 0 1rem 0 0.75rem;
+                line-height: 2.125rem;
+                min-height: calc(2.125rem + 2px);
+            }
+            .lookupInput a { 
+                border: none !important;
+                top:-36px;
+                margin-top: -20px;
+                top: -10px
+            }
+            .lookupInput {
+                white-space: normal;
+                display: grid;
+                height:35px;
+            }
+            .lookupInput img {
+                float:right;
+                //margin-top:10px;      
+            }
+            .asterisk_input:after {
+                content:" *"; 
+                color: #e32;
+                position: absolute; 
+                margin: 0px 0px 0px -20px; 
+                font-size: xx-large; 
+                padding: 0 5px 0 0; 
+            }
+
+        </style>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src = "https://code.jquery.com/jquery-migrate-3.0.0.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+        <script src ="https://afarkas.github.io/webshim/js-webshim/minified/polyfiller.js"></script>
+        <script src="/soap/ajax/36.0/connection.js" type="text/javascript"></script>
+        <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"/>
+        <apex:stylesheet value="{!URLFOR($Resource.SLDSv0122, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+        <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+        <script type="text/javascript">
+            var __sfdcSessionId = '{!GETSESSIONID()}';
+            webshim.setOptions('forms-ext', {
+                        replaceUI: 'auto',
+                        types: 'date',
+                        date:{
+                          startView: 2
+                        }
+                    });
+            webshim.polyfill('forms forms-ext');
+        </script>
+        <!-- Salesforce AJAX Toolkit Source -->
+        <script>
+            function isNumber(evt) {
+                evt = (evt) ? evt : window.event;
+                var charCode = (evt.which) ? evt.which : evt.keyCode;
+                if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                    return false;
+                }
+                return true;
+            }
+        </script>
+
+        <style>
+            html, body { height: 100%; }
+            #mapcontainer { width: 100%; height:100%; padding: 0; }
+            .slds .slds-card__header {
+                padding: 10px 10px !important;
+            }
+            #spinner{
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                text-align:center;
+                z-index:1;
+            }
+            #opaque {
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+                display: none;
+                background-color: gray;
+                filter: alpha(opacity=30);
+                opacity: 0.3;
+                -moz-opacity:0.3;
+                -khtml-opacity:0.3
+            }
+            *html #opaque {
+                position: absolute;
+            }    
+            .slds .slds-form-element__label {
+                font-size:13px;
+            }
+            .errorMsg{
+                color:red;
+            }
+            .smallhorizontal{
+                padding-left: 6px !important;
+                padding-right: 6px !important;
+            }
+        </style>
+
+        <html ng-app = "myModule" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <head>
+                <title>Shutter Fly Agreement Request Form</title>
+                <script type="text/javascript">
+                    var vendorId = '';
+                    var businessOwnerId = '';
+                    function onSelectBusinessOwner(businessOwnerElemid) {
+                        var businesslkfield = document.getElementById(businessOwnerElemid + '_lkid').value;
+                        businessOwnerId = businesslkfield;
+                    }
+                    
+                    function onSelectVendor(vendorElemid) {
+                        var vendorlkfield = document.getElementById(vendorElemid + '_lkid').value;
+                        vendorId = vendorlkfield;
+                    }
+                    
+                    var myapp = angular.module('myModule',[]).controller("myController", function ($scope,$window) {
+                        var input = {
+                                        businessOwner: '',
+                                        source: '',
+                                        vendorName : '',
+                                        aka : '',
+                                        counterPartyName : '',
+                                        counterPartyEmail : '',
+                                        existingAgCheckbox : false,
+                                        existingAgText : '',
+                                        ProposedEffectiveDate : null,
+                                        TermMonths : '',
+                                        serviceStartDate : null,
+                                        serviceEndDate : null,
+                                        agreementType : '',
+                                        description : '',
+                                        brandSFLYINC : false,
+                                        brandSFLY : false,
+                                        brandTP : false,
+                                        brandWPD : false,
+                                        brandBorrowLenses : false,
+                                        brandMyPub : false,
+                                        bradGrooveBook : false,
+                                        eStaff : '',
+                                        TransactionType : '',
+                                        agreementValue : '',
+                                        paymentTerms : '',
+                                        poRequired : false ,
+                                        poRequiredText : '',
+                                        withinBudgetYes : false,
+                                        withinBudgetNo : false,
+                                        capex : '',
+                                        capitalCommitteApproval : false,
+                                        perLicense : false,
+                                        additionalInformation : '',
+                                        rush : false,
+                                        FPAContact : '',  
+                                        rushText : ''
+                                }
+                        $scope.input = input;
+                        $scope.showRushText = false;
+                        $scope.showAgText = false;
+                        //$scope.showOffline = false;
+                        $scope.showSpinner = false;
+                        $scope.vendorError = "";
+                        $scope.sourceError = "";
+                        $scope.businessError = "";
+                        $scope.effectiveDateError = "";
+                        $scope.poNumberErrmsg = "";
+                        $scope.counterPartyErrorMsg = "";
+                        $scope.counterPartyEmailErrorMsg = "";
+                        $scope.existingAgreementErrorMsg = "";
+                        $scope.agreementValueErrorMsg = "";
+                        $scope.SourceValue = "";
+                        
+                        $scope.showText = function(i){
+                            if(i == true){
+                                $scope.showRushText = true;
+                            }else{
+                                $scope.showRushText = false;
+                            }
+                        }
+                        
+                        $scope.showAgreText = function(i){
+                            if(i == true){
+                                $scope.showAgText = true;
+                            }else{
+                                $scope.showAgText = false;
+                            }
+                        }
+                        
+                        var offlineAgreement = '{!$CurrentPage.parameters.importOfflineDoc}';
+                        if(offlineAgreement != ''){
+                            if(offlineAgreement == 'true'){
+                                $scope.input.source = 'Other Party Paper';
+                            } 
+                            else{
+                                $scope.input.source = 'Internal Paper';
+                            }
+                            $scope.SourceValue = $scope.input.source;
+                        }
+                        else{
+                            $scope.input.source = 'Internal Paper';
+                            $scope.SourceValue = $scope.input.source;
+                        }
+                        
+                        $scope.submitForm = function() {
+                            
+                            $scope.showSpinner = true;
+                            var myJSON = JSON.stringify($scope.input);
+                            $scope.input.vendorName = vendorId;
+                            $scope.input.businessOwner = businessOwnerId;
+                            var noErrors = true;
+                            if(vendorId == '' || vendorId == null){
+                                noErrors = false;
+                                $scope.vendorError = 'Please enter Vendor Name!';
+                            }
+                            else{
+                                $scope.vendorError = '';
+                                $scope.input.vendorName = vendorId;
+                            }
+                            
+                            /*if($scope.input.source == ''){
+                                $scope.sourceError = 'Please enter Source!';
+                                noErrors = false;
+                            }
+                            else{
+                                $scope.sourceError = '';
+                            }*/
+                            
+                            if($scope.input.ProposedEffectiveDate == null){
+                                $scope.effectiveDateError = 'Please enter Proposed Effective Date!';
+                                noErrors = false;
+                            }
+                            else{
+                                $scope.effectiveDateError = '';
+                            }
+                            
+                            if($scope.input.poRequiredText != null){
+                                if($scope.input.poRequiredText.length > 10){
+                                    $scope.poNumberErrmsg = 'PO Number should be less than 10 Characters.';
+                                    noErrors = false;
+                                }
+                                else{
+                                    $scope.poNumberErrmsg = '';
+                                }
+                            }
+                            if($scope.input.agreementValue != null && $scope.input.agreementValue != ''){
+                                var amountfrmt = /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:(\.|,)\d+)?$/;  
+                                if($scope.input.agreementValue.match(amountfrmt)) {  
+                                    $scope.agreementValueErrorMsg = '';
+                                }  
+                                else{  
+                                   $scope.agreementValueErrorMsg = 'Please enter valid Agreement Value.';  
+                                   noErrors = false;
+                                }
+                            }
+                            
+                            if($scope.input.counterPartyName != null){
+                                if($scope.input.counterPartyName.length > 255){
+                                    $scope.counterPartyErrorMsg = 'Counter Party Name Should Be less than 255 Characters.';
+                                    noErrors = false;
+                                }
+                                else{
+                                    $scope.counterPartyErrorMsg = '';
+                                }
+                            }
+                            
+                            if($scope.input.counterPartyEmail != null && $scope.input.counterPartyEmail != ''){
+                                var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;  
+                                if($scope.input.counterPartyEmail.match(mailformat)) {  
+                                    $scope.counterPartyEmailErrorMsg = '';
+                                }  
+                                else{  
+                                   $scope.counterPartyEmailErrorMsg = 'Please enter valid Email.';  
+                                   noErrors = false;
+                                }
+                            }
+                            
+                            if($scope.input.existingAgText != null){
+                                if($scope.input.existingAgText.length > 255) {  
+                                    $scope.existingAgreementErrorMsg = 'Existing Agreement Details shoud be less than 255 characters.';  
+                                    noErrors = false;
+                                }  
+                                else{  
+                                    $scope.existingAgreementErrorMsg = '';
+                                }
+                            }
+                            if($scope.input.eStaff == ''){
+                                $scope.estaffErrorMsg = 'Please Select E-Staff Approver.';
+                                noErrors = false;
+                            }
+                            else{
+                                $scope.estaffErrorMsg = '';
+                            }
+                            
+                            if(noErrors){
+                                Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.AgreementForm_ctrlr.submitForm}',
+                                                                            myJSON,
+                                                                            vendorId,
+                                                                            businessOwnerId,
+                                                                            '{!importOfflineDocument}',
+                                                                            function(result, event){
+                                                                                if(event.status){
+                                                                                    var resultsSet = result.split(';');
+                                                                                    if(resultsSet[0] == 'true'){
+                                                                                        window.location.href = '/'+ resultsSet[1];
+                                                                                    }else if(resultsSet[0] == 'true1'){
+                                                                                        window.location.href = resultsSet[1];
+                                                                                    }
+                                                                                    else{
+                                                                                        $scope.ErrorMsg = resultsSet[1];  
+                                                                                    } 
+                                                                                }
+                                                                                else{
+                                                                                    $scope.ErrorMsg = ErrorMsg;
+                                                                                }
+                                                                            }, 
+                                                                            {escape: true}
+                                                                        );
+                                
+                            }
+                            else{
+                                $scope.ErrorMsg = 'Please verify the error messages';
+                            }
+                            $scope.showSpinner = false;
+                        }
+                        
+                        $scope.PageRedirect = function() {
+                            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.AgreementForm_ctrlr.RedirectPage}',
+                                                                  function(result, event){
+                                                                        console.log(result);
+                                                                        $window.location.href = result; 
+                                                                  });
+                      
+                        
+                        }
+                    });
+            </script>
+        </head> 
+        <body  ng-controller="myController">
+        <div ng-show="showSpinner">
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+                        &nbsp;
+                    </div>
+                    <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 15% 50%">
+                        <div style="display: inline-block;background:transparent; padding: 2px; width: 172px;">
+                            <div>
+                            <i class="fa fa-spinner fa-spin" style="font-size:48px"></i>
+                            <apex:image value="{!$Resource.spinner}"/>
+                            </div>
+                            
+                        </div>
+                    </div>
+            </div>
+                
+            <div class="slds">
+                <div id="opaque"/>
+                <div id="spinner">
+                    <div class="slds-spinner_container" style="text-align:center">
+                        <div class="slds-spinner--inverse slds-spinner slds-spinner--medium" aria-hidden="false" role="alert">
+                            <img src="{!URLFOR($Resource.Spinnerforstatus)}"/>
+                        </div>
+                    </div>
+                </div> 
+
+                <div class="slds-page-header">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-has-flexi-truncate">
+                            <div class="slds-media slds-no-space slds-grow">
+                            <div class="slds-media__body">
+                                <p class="slds-text-heading--medium">Request Agreement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <div class="slds-m-around--small">
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Business Owner</label>
+                                <div class="slds-form-element__control">
+                                    <apex:form >
+                                        <apex:inputField value="{!agreement.Cldy_Business_Owner__c}" styleClass="slds-lookup" id="businessOwner">
+                                            <apex:actionSupport event="onchange" reRender="someArea" oncomplete="onSelectBusinessOwner(this.id)"/>
+                                        </apex:inputField>
+                                    </apex:form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Source</label>
+                                <!--<input type ="text" ng-model="input.source" class="slds-form-element__label"/>-->
+                                <br/><span class="slds-form-element__label"> {{SourceValue}} </span>
+                                <!--<div class="slds-form-element__control">
+                                    <div class="slds-select_container">
+                                        <select id="select-01" ng-model="input.source" class="slds-select">
+                                            <option value="Internal Paper">Internal Paper</option>
+                                            <!-- <option value="Third Party Paper">Third Party Paper</option> -->
+                                            <!--<option value="Other Party Paper">Other Party Paper</option>
+                                        </select>
+                                    </div>
+                                    <!--<div style="text-align:left;color:red"> {{sourceError}} </div>-->    
+                                <!--</div>-->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Vendor Name
+                                    <span class="slds-form-element__label" style="font-size:12px;color:red;"> * </span>
+                                </label>
+                                <div class="slds-form-element__control">
+                                    <apex:form >
+                                        <apex:inputField value="{!agreement.Apttus__Account__c}" styleClass="slds-lookup" id="vendor">
+                                            <apex:actionSupport event="onchange" reRender="someArea" oncomplete="onSelectVendor(this.id)"/>
+                                            <!--<span class="asterisk_input"></span>--> 
+                                        </apex:inputField>
+                                        <div style="text-align:left;color:red"> {{vendorError}} </div>
+                                    </apex:form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">AKAs</label>
+                                <div class="slds-form-element__control">
+                                    <input type ="text" ng-model="input.aka" class="slds-input" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Counter Party Name</label>
+                                <div class="slds-form-element__control">
+                                    <input type ="text" ng-model="input.counterPartyName" class="slds-input" />
+                                </div>
+                                <div style="text-align:left;color:red"> {{counterPartyErrorMsg}} </div>
+                            </div>
+                        </div>
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Counter Party Email</label>
+                                <div class="slds-form-element__control">
+                                    <input type ="text" ng-model="input.counterPartyEmail" class="slds-input" />
+                                </div>
+                                <div style="text-align:left;color:red"> {{counterPartyEmailErrorMsg}} </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Existing Agreement?</label>
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="agree">
+                                        <input type="checkbox" name="default" id="agree" ng-click="showAgreText(input.existingAgCheckbox)" ng-model="input.existingAgCheckbox"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">(if Yes, please provide agreement date &amp; type ( SOW/Order/MSA )</span>
+                                    </label>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2"></label>
+                                <div class="slds-form-element__control">
+                                    <input type ="text" ng-show="showAgText" ng-model="input.existingAgText" class="slds-input" />
+                                </div>
+                                <div style="text-align:left;color:red"> {{existingAgreementErrorMsg}} </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded ">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Proposed Effective Date
+                                    <span class="slds-form-element__label" style="font-size:12px;color:red;"> * </span>
+                                </label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-input-has-icon slds-input-has-icon--right">
+                                        <input type="date"  id="ProposedDate" ng-model="input.ProposedEffectiveDate" class="slds-input" />
+                                    </div>
+                                    <div style="text-align:left;color:red"> {{effectiveDateError}} </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Term (Months)</label>
+                                <div class="slds-form-element__control">
+                                    <input type ="text" ng-model="input.TermMonths" class="slds-input" onkeypress="return isNumber(event)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">Start Date of Services</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-input-has-icon slds-input-has-icon--right">
+                                        <input type="date"  date-format="yyyy-MM-dd" id="StartDateOfService" ng-model="input.serviceStartDate"  class="slds-input" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="inputSample2">End Date of Services</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-input-has-icon slds-input-has-icon--right">
+                                        <input type="date"  date-format="yyyy-MM-dd" id="EndDateOfService" ng-model="input.serviceEndDate"  class="slds-input"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="select-01">Agreement Type</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container">
+                                            <select id="select-01" ng-model="input.agreementType" class="slds-select">
+                                                <option value="Bounty/Royalty/Revenue Share">Bounty/Royalty/Revenue Share</option>
+                                                <!--<option value="Capex">Capex</option>-->
+                                                <option value="Event">Event</option>
+                                                <option value="Facility/Equipment">Facility/Equipment</option>
+                                                <option value="Flash Deal">Flash Deal</option>
+                                                <option value="Fulfillment/Supplier">Fulfillment/Supplier</option>
+                                                <option value="HR Agreement">HR Agreement</option>
+                                                <option value="IOPS/Tech">IOPS/Tech</option>
+                                                <option value="Marketing: Insertion Order">Marketing: Insertion Order</option>
+                                                <option value="Marketing: Promotional">Marketing: Promotional</option>
+                                                <option value="SBS">SBS</option>
+                                                <option value="Other">Other</option>
+                                                <option value="Lease">Lease</option>
+                                                <option value="Services">Services</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--12-of-12 slds-large-size--12-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="textarea-input-01">Description</label>
+                                    <div class="slds-form-element__control">
+                                        <textarea id="textarea-input-02" rows="3" class="slds-textarea" ng-model="input.description"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">Brand <br />
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="brandSFLYINC">
+                                        <input type="checkbox" name="default" id="brandSFLYINC" ng-model="input.brandSFLYINC"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">SFLY,&nbsp;INC</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--1-of-12 slds-large-size--1-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="SFLY">
+                                        <input type="checkbox" name="default" id="SFLY" ng-model="input.brandSFLY"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">SFLY</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--1-of-12 slds-large-size--1-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="TP">
+                                        <input type="checkbox" name="default" id="TP" ng-model="input.brandTP"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">TP</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--1-of-12 slds-large-size--1-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="WPD">
+                                        <input type="checkbox" name="default" id="WPD" ng-model="input.brandWPD"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">WPD</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="BorrowLenses">
+                                        <input type="checkbox" name="default" id="BorrowLenses" ng-model="input.brandBorrowLenses"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">BorrowLenses</span>
+                                    </label>
+                                </div>
+                            </div>
+                           <!-- <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--1-of-12 slds-large-size--1-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="MyPub">
+                                        <input type="checkbox" name="default" id="MyPub" ng-model="input.brandMyPub"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">MyPub</span>
+                                    </label>
+                                </div>
+                            </div> -->
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="GrooveBook">
+                                        <input type="checkbox" name="default" id="GrooveBook" ng-model="input.bradGrooveBook"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">GrooveBook</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="eStaff">E-StaffApprover
+                                        <span class="slds-form-element__label" style="font-size:12px;color:red;"> * </span>
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container">
+                                            <select id="eStaff" ng-model="input.eStaff" class="slds-select">
+                                                <option value="Christopher North">Christopher North</option>
+                                                <option value="Dwayne Black">Dwayne Black</option>
+                                                <option value="Ishantha Lokuge">Ishantha Lokuge</option>
+                                                <option value="Jason Sebring">Jason Sebring</option>
+                                                <option value="John Boris">John Boris</option>
+                                                <option value="Michael Pope">Michael Pope</option>
+                                                <option value="Michele Anderson">Michele Anderson</option>
+                                                <option value="Paige Kuempel">Paige Kuempel</option>
+                                                <option value="Satish Menon">Satish Menon</option>
+                                                <option value="Scott Arnold">Scott Arnold</option>
+                                                <option value="Tracy Layney">Tracy Layney</option>
+                                                
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:left;color:red"> {{estaffErrorMsg}} </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="TransactionType">Transaction Type</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container">
+                                            <select id="TransactionType" ng-model="input.TransactionType" class="slds-select">
+                                                <option value="Expenditure">Expenditure</option>
+                                                <option value="Revenue">Revenue</option>
+                                                <option value="Promotion/No cost">Promotion/No cost</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">Agreement Value</label>
+                                    <div class="slds-form-element__control">
+                                        <input type ="text" ng-model="input.agreementValue" class="slds-input"/>
+                                        <span class="slds-form-element__label" style="font-size:12px;color:red;">Do not enter special characters</span>
+                                    </div>
+                                    <div style="text-align:left;color:red"> {{agreementValueErrorMsg}} </div>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label">Payment Terms</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container">
+                                            <select ng-model="input.paymentTerms" class="slds-select">
+                                               <!-- <option value="Due Upon Receipt">Due Upon Receipt</option>-->
+                                                <option value="2% Net 10">2% Net 10</option>
+                                                <option value="Net, 15 Days">Net, 15 Days</option>
+                                                <option value="Net, 30 Days">Net, 30 Days</option>
+                                                <option value="Net, 45 Days">Net, 45 Days</option>
+                                                <option value="Net, 60 Days">Net, 60 Days</option>
+                                                <option value="Special">Special</option>
+                                           </select>
+                                        </div>
+                                    </div>
+                                    <font style="font-size:12px; padding-top:10px; color:red;">
+                                        For expenditure our Standard terms are 2% Net 10 or Net 60.<br />
+                                        Notify our AP Dept for any term less than Net 30 to ensure timely payments.
+                                    </font>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">PO Required?</label>
+                                    <div class="slds-form-element__control">
+                                        <label class="slds-checkbox" for="poRequired">
+                                            <input type="checkbox" name="default" id="poRequired" ng-model="input.poRequired"/>
+                                            <span class="slds-checkbox--faux"></span>
+                                            <span class="slds-form-element__label" style="font-size:12px;">( If known please provide PO Number )</span>
+                                            <br />
+                                            <font style="font-size:12px; padding-top: 10px; color:red;">
+                                                A PO is required for non-inventory purchases over $3,000 or capital expenditures over $1,000.
+                                            </font>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2"></label>
+                                    <div class="slds-form-element__control">
+                                        <input type ="text" ng-model="input.poRequiredText" class="slds-input" />
+                                    </div>
+                                    <div style="text-align:left;color:red"> {{poNumberErrmsg}} </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--medium">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">Within Budget?</label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="withinBudgetYes">
+                                        <input type="checkbox" name="default" id="withinBudgetYes" ng-model="input.withinBudgetYes"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">Yes</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small smallhorizontal slds-size--1-of-2 slds-medium-size--1-of-12 slds-large-size--1-of-12">
+                                <div class="slds-form-element__control">
+                                    <label class="slds-checkbox" for="withinBudgetNo">
+                                        <input type="checkbox" name="default" id="withinBudgetNo" ng-model="input.withinBudgetNo"/>
+                                        <span class="slds-checkbox--faux"></span>
+                                        <span class="slds-form-element__label" style="font-size:12px;">No</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">FP&amp;A Contact </label>
+                                    <div class="slds-form-element__control">
+                                        <input type ="text" ng-model="input.FPAContact" class="slds-input" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--medium slds-m-bottom--medium ">
+                            <span style= "color:blue;">If Capex agreement, please provide additional information below</span>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">Employee Estimated Capex</label>
+                                    <div class="slds-form-element__control">
+                                        <input type ="text" ng-model="input.capex" class="slds-input" onkeypress="return isNumber(event)"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--medium">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <label class="slds-checkbox" for="capitalCommitteApproval">
+                                            <input type="checkbox" name="default" id="capitalCommitteApproval" ng-model="input.capitalCommitteApproval"/>
+                                            <span class="slds-checkbox--faux"></span>
+                                            <span class="slds-form-element__label" style="font-size:12px;">Capital Committee Approval?</span>
+                                            <br />
+                                            <font style="font-size:12px; padding-top:10px; color:red;">Capex approval is required for capital expenditures above $300k if within budget,and $100k if out of (if yes, please attach approval.)</font>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="textarea-input-01">Additional Information/Comments</label>
+                                    <div class="slds-form-element__control">
+                                        <textarea id="textarea-input-02" rows="3" class="slds-textarea" ng-model="input.additionalInformation"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--medium">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <label class="slds-checkbox" for="perLicense">
+                                            <input type="checkbox" name="default" id="perLicense" ng-model="input.perLicense"/>
+                                            <span class="slds-checkbox--faux"></span>
+                                            <span class="slds-form-element__label">If Software, is it a perpetual License?</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--medium">
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2">Rush</label>
+                                    <div class="slds-form-element__control">
+                                        <label class="slds-checkbox" for="rush">
+                                            <input type="checkbox" name="default" id="rush" ng-click="showText(input.rush)" ng-model="input.rush"/>
+                                            <span class="slds-checkbox--faux"></span>
+                                            <span class="slds-form-element__label">If yes please provide explanation for rush</span>
+                                            <br />
+                                            <font style="font-size:12px; padding-top:10px; color:red;">Please note that rushes are subjected to approval to the extent that the rush is justifable.</font>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--6-of-12 slds-large-size--6-of-12">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="inputSample2"></label>
+                                    <div class="slds-form-element__control">
+                                        <!--<input type ="text" ng-show="showRushText" ng-model="input.rushText" class="slds-input" />-->
+                                        <textarea ng-show="showRushText" id="textarea-input-03" rows="3" class="slds-textarea" ng-model="input.rushText"></textarea>
+                                    </div>
+                                </div>
+                            </div>  
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid--pull-padded slds-m-top--medium">
+                            <center>
+                                <button class="slds-button slds-button--brand" ng-click="submitForm()" >Save</button>
+                                <button class="slds-button slds-button--brand" ng-click="PageRedirect()" >Cancel</button>
+                                
+                            </center>
+                        </div>
+                        <br/>
+                    </div>
+                    <div style="text-align:left;color:red"> {{ErrorMsg}} </div>
+                </div>
+            </body>
+        </html>
+</apex:page>
